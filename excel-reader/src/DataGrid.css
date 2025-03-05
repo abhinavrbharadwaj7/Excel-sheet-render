@@ -1,21 +1,36 @@
 .MuiDataGrid-root {
     border: none !important;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    border-radius: 1rem !important;
+    overflow: hidden;
+    background: var(--glass-bg) !important;
+    box-shadow: var(--shadow-md) !important;
   }
   
   .MuiDataGrid-columnHeaders {
-    background-color: #f3f7fa !important;
-    border-bottom: 2px solid #e0e0e0;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) !important;
+    color: white !important;
+    font-size: 0.875rem !important;
+    border-radius: 0 !important;
+  }
+  
+  .MuiDataGrid-columnHeaderTitle {
+    font-weight: 600 !important;
   }
   
   .MuiDataGrid-cell {
-    border-bottom: 1px solid #e0e0e0 !important;
-    padding: 8px !important;
+    border-bottom: 1px solid rgba(224, 224, 224, 0.3) !important;
+    font-size: 0.875rem;
   }
-
-  .MuiDataGrid-columnHeader {
-    padding: 12px 8px !important;
-    font-weight: 600;
+  
+  .MuiDataGrid-row:hover {
+    background: rgba(99, 102, 241, 0.03) !important;
+  }
+  
+  .MuiDataGrid-virtualScroller {
+    background: rgba(255, 255, 255, 0.7);
+  }
+  
+  .MuiDataGrid-footerContainer {
+    background: rgba(245, 245, 245, 0.8);
+    border-top: 1px solid rgba(224, 224, 224, 0.3) !important;
   }

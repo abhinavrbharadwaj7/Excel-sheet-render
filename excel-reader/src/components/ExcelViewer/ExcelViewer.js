@@ -11,6 +11,10 @@ const ExcelViewer = () => {
   const [error, setError] = useState(null);
   const [isDragActive, setIsDragActive] = useState(false);
 
+  const handleTitleClick = () => {
+    window.location.reload();
+  };
+
   const processFile = async (file) => {
     setLoading(true);
     setError(null);
@@ -87,7 +91,14 @@ const ExcelViewer = () => {
   return (
     <div className="excel-viewer-container">
       <div className="header-container">
-        <Typography variant="h5">Excel Viewer</Typography>
+        <Typography 
+          variant="h5" 
+          onClick={handleTitleClick}
+          className="excel-viewer-title"
+          style={{ cursor: 'pointer' }}
+        >
+          Excel Viewer
+        </Typography>
         {workbook && (
           <Typography variant="subtitle1">
             {workbook.fileName} • {workbook.sheets.length} sheets
