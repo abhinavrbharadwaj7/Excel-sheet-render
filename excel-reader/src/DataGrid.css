@@ -1,0 +1,21 @@
+.MuiDataGrid-root {
+    border: none !important;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  
+  .MuiDataGrid-columnHeaders {
+    background-color: #f3f7fa !important;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  
+  .MuiDataGrid-cell {
+    border-bottom: 1px solid #e0e0e0 !important;
+    padding: 8px !important;
+  }
+
+  .MuiDataGrid-columnHeader {
+    padding: 12px 8px !important;
+    font-weight: 600;
+  }
