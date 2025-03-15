@@ -72,7 +72,7 @@ const ExcelViewer = () => {
     if (!rows || rows.length === 0) return [];
     return rows[0].map((_, index) => ({
       field: `col${index}`,
-      headerName: String.fromCharCode(65 + index),
+      headerName: `${String.fromCharCode(65 + index)} (${index + 1})`,
       width: 120,
       editable: false
     }));
