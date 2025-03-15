@@ -34,3 +34,51 @@
     background: rgba(245, 245, 245, 0.8);
     border-top: 1px solid rgba(224, 224, 224, 0.3) !important;
   }
+
+.dark .MuiDataGrid-root {
+  background: #1a1a1a !important;
+  color: #e0e0e0;
+}
+
+.dark .MuiDataGrid-cell {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e0e0e0 !important;
+}
+
+.dark .MuiDataGrid-columnHeaders {
+  background: #2d2d2d !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark .MuiDataGrid-footerContainer {
+  background: #2d2d2d !important;
+  color: #e0e0e0 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark .MuiDataGrid-row:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .MuiDataGrid-virtualScroller {
+  background: #1a1a1a !important;
+}
+
+.dark .MuiTablePagination-root {
+  color: #e0e0e0 !important;
+}
+
+.dark .MuiDataGrid-cell:focus,
+.dark .MuiDataGrid-cell:focus-within {
+  outline-color: var(--primary-color) !important;
+}
+
+.dark .MuiDataGrid-columnHeader:focus,
+.dark .MuiDataGrid-columnHeader:focus-within {
+  outline-color: var(--primary-color) !important;
+}
+
+.dark .MuiDataGrid-row.Mui-selected {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+}

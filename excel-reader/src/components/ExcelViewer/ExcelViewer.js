@@ -1,10 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import ExcelJS from 'exceljs';
 import { DataGrid } from '@mui/x-data-grid';
-import { Tabs, Tab, Box, Typography, CircularProgress } from '@mui/material';
+import { Tabs, Tab, Box, Typography, CircularProgress, IconButton } from '@mui/material';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './ExcelViewer.css';
 
-const ExcelViewer = () => {
+const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [workbook, setWorkbook] = useState(null);
   const [activeSheet, setActiveSheet] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -89,16 +91,21 @@ const ExcelViewer = () => {
   };
 
   return (
-    <div className="excel-viewer-container">
+    <div className={`excel-viewer-container ${darkMode ? 'dark' : ''}`}>
       <div className="header-container">
-        <Typography 
-          variant="h5" 
-          onClick={handleTitleClick}
-          className="excel-viewer-title"
-          style={{ cursor: 'pointer' }}
-        >
-          Excel Viewer
-        </Typography>
+        <div className="header-left">
+          <Typography 
+            variant="h5" 
+            onClick={handleTitleClick}
+            className="excel-viewer-title"
+            style={{ cursor: 'pointer' }}
+          >
+            Excel Viewer
+          </Typography>
+          <IconButton onClick={onToggleTheme} color="inherit" className="theme-toggle">
+            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+        </div>
         {workbook && (
           <Typography variant="subtitle1">
             {workbook.fileName} • {workbook.sheets.length} sheets
