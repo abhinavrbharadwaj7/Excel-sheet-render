@@ -1,21 +1,16 @@
 import React, { useState, useCallback } from 'react';
 import ExcelJS from 'exceljs';
-import { DataGrid } from '@mui/x-data-grid';
-import { Tabs, Tab, Box, Typography, CircularProgress, IconButton } from '@mui/material';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { Box, Typography, CircularProgress, IconButton } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './ExcelViewer.css';
 
 const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [workbook, setWorkbook] = useState(null);
-  const [activeSheet, setActiveSheet] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDragActive, setIsDragActive] = useState(false);
-
-  const handleTitleClick = () => {
-    window.location.reload();
-  };
 
   const processFile = async (file) => {
     setLoading(true);
@@ -29,26 +24,72 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         const buffer = reader.result;
         const wb = new ExcelJS.Workbook();
         await wb.xlsx.load(buffer);
-        
+
         const sheets = [];
-        wb.eachSheet((worksheet, sheetId) => {
-          const rows = [];
-          worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-            rows.push(row.values.slice(1));
+        wb.eachSheet((worksheet) => {
+          let tableData = [];
+          let headers = [];
+          let inMaterialTable = false;
+
+          worksheet.eachRow({ includeEmpty: true }, (row) => {
+            const rowValues = row.values.slice(1).map(cell => {
+              if (cell === null || cell === undefined) return '';
+              if (typeof cell === 'object' && cell.text) return cell.text.trim();
+              if (typeof cell === 'number') return cell.toString();
+              if (cell instanceof Date) return cell.toISOString();
+              return typeof cell === 'string' ? cell.trim() : '';
+            });
+
+            if (rowValues[0] === 'Component' && rowValues[1] === 'Substance') {
+              inMaterialTable = true;
+              headers = rowValues.filter(h => h);
+              return;
+            }
+
+            if (inMaterialTable) {
+              if (rowValues.every(cell => !cell)) {
+                inMaterialTable = false;
+                return;
+              }
+
+              const cleanRow = headers.reduce((acc, header, index) => {
+                let value = rowValues[index] || '-';
+                
+                if (typeof value === 'string' && value.includes('e-')) {
+                  value = Number(value).toFixed(8);
+                }
+
+                if (!isNaN(value) && value !== '-') {
+                  value = Number(value);
+                  if (value.toString().includes('.')) {
+                    value = Number(value.toFixed(6));
+                  }
+                }
+
+                acc[header] = value;
+                return acc;
+              }, {});
+
+              if (Object.values(cleanRow).some(v => v !== '-')) {
+                tableData.push({ ...cleanRow, id: tableData.length });
+              }
+            }
           });
+
           sheets.push({
             name: worksheet.name,
-            rows: rows,
-            rowCount: worksheet.rowCount,
-            columnCount: worksheet.columnCount
+            table: {
+              headers: headers,
+              rows: tableData
+            }
           });
         });
-        
+
         setWorkbook({
           fileName: file.name,
           sheets: sheets,
-          created: wb.created,
-          modified: wb.modified
+          created: new Date(),
+          modified: new Date()
         });
         setLoading(false);
       };
@@ -70,23 +111,27 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     if (file) processFile(file);
   };
 
-  const generateColumns = (rows) => {
-    if (!rows || rows.length === 0) return [];
-    return rows[0].map((_, index) => ({
-      field: `col${index}`,
-      headerName: `${String.fromCharCode(65 + index)} (${index + 1})`,
-      width: 120,
-      editable: false
-    }));
-  };
-
-  const generateRows = (rows) => {
-    return rows.map((row, index) => ({
-      id: index,
-      ...row.reduce((acc, val, idx) => {
-        acc[`col${idx}`] = val?.toString() || '';
-        return acc;
-      }, {})
+  const columns = (headers) => {
+    return headers.map(header => ({
+      field: header,
+      headerName: header,
+      width: 200,
+      headerClassName: 'data-grid-header',
+      cellClassName: 'data-grid-cell',
+      valueFormatter: ({ value }) => {
+        if (typeof value === 'number') {
+          return value.toLocaleString(undefined, {
+            maximumFractionDigits: 6,
+            useGrouping: false
+          });
+        }
+        return value;
+      },
+      renderCell: ({ value }) => (
+        <div className={typeof value === 'number' ? 'number-cell' : ''}>
+          {value}
+        </div>
+      )
     }));
   };
 
@@ -94,15 +139,10 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     <div className={`excel-viewer-container ${darkMode ? 'dark' : ''}`}>
       <div className="header-container">
         <div className="header-left">
-          <Typography 
-            variant="h5" 
-            onClick={handleTitleClick}
-            className="excel-viewer-title"
-            style={{ cursor: 'pointer' }}
-          >
-            Excel Viewer
+          <Typography variant="h5">
+            Material Declaration Viewer
           </Typography>
-          <IconButton onClick={onToggleTheme} color="inherit" className="theme-toggle">
+          <IconButton onClick={onToggleTheme} color="inherit">
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
         </div>
@@ -116,10 +156,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       {!workbook && (
         <div 
           className={`drop-zone ${isDragActive ? 'active' : ''}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragActive(true);
-          }}
+          onDragOver={(e) => e.preventDefault() || setIsDragActive(true)}
           onDragLeave={() => setIsDragActive(false)}
           onDrop={handleDrop}
         >
@@ -127,14 +164,14 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
             type="file"
             accept=".xlsx,.xls"
             onChange={handleFileInput}
-            style={{ display: 'none' }}
+            hidden
             id="file-input"
           />
           <label htmlFor="file-input">
             <Typography variant="h6">
               {isDragActive ? 'Drop Excel file here' : 'Drag & Drop or Click to Upload'}
             </Typography>
-            <Typography variant="body2" color="textSecondary" style={{ marginTop: 10 }}>
+            <Typography variant="body2" color="textSecondary" mt={1}>
               Supports .xlsx and .xls files
             </Typography>
           </label>
@@ -144,54 +181,40 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       {loading && (
         <div className="loading-container">
           <CircularProgress />
-          <Typography variant="body1" style={{ marginLeft: 10 }}>
+          <Typography variant="body1" ml={2}>
             Processing file...
           </Typography>
         </div>
       )}
 
       {error && (
-        <Typography color="error" align="center" my={4}>
+        <Typography color="error" textAlign="center" my={4}>
           {error}
         </Typography>
       )}
 
-      {workbook && (
-        <div>
-          <Tabs
-            value={activeSheet}
-            onChange={(e, newValue) => setActiveSheet(newValue)}
-            variant="scrollable"
-            scrollButtons="auto"
-            className="sheet-tabs"
-          >
-            {workbook.sheets.map((sheet, index) => (
-              <Tab 
-                key={index}
-                label={`${sheet.name} (${sheet.rowCount}x${sheet.columnCount})`}
-              />
-            ))}
-          </Tabs>
-
-          <Box mt={2} height={600}>
-            <DataGrid
-              rows={generateRows(workbook.sheets[activeSheet].rows)}
-              columns={generateColumns(workbook.sheets[activeSheet].rows)}
-              pageSize={50}
-              rowsPerPageOptions={[50, 100, 200]}
-              checkboxSelection={false}
-              disableSelectionOnClick
-              loading={loading}
-            />
-          </Box>
-
-          <div className="file-info">
-            <Typography variant="body2">
-              File Info: {workbook.fileName} • Created: {workbook.created?.toLocaleDateString()} • 
-              Modified: {workbook.modified?.toLocaleDateString()}
-            </Typography>
-          </div>
-        </div>
+      {workbook && workbook.sheets[0]?.table?.headers && (
+        <Box height="75vh" mt={4}>
+          <DataGrid
+            rows={workbook.sheets[0].table.rows}
+            columns={columns(workbook.sheets[0].table.headers)}
+            pageSize={25}
+            rowsPerPageOptions={[25, 50, 100]}
+            components={{ Toolbar: GridToolbar }}
+            density="compact"
+            disableSelectionOnClick
+            sx={{
+              '& .number-cell': {
+                fontFamily: 'Roboto Mono, monospace',
+                justifyContent: 'flex-end',
+                paddingRight: '16px !important'
+              },
+              '& .MuiDataGrid-virtualScroller': {
+                overflowX: 'auto'
+              }
+            }}
+          />
+        </Box>
       )}
     </div>
   );

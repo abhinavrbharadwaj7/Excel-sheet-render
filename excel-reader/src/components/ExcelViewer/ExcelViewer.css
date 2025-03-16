@@ -1,139 +1,104 @@
 :root {
-    --primary-color: #6366f1;
-    --secondary-color: #a855f7;
-    --background-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --dark-bg: #121212;
-    --dark-surface: #1e1e1e;
-    --dark-text: #ffffff;
-  }
-  
-  .excel-viewer-container {
-    max-width: 1400px;
-    margin: 2rem auto;
-    padding: 2rem;
-    border-radius: 1.5rem;
-    background: var(--background-gradient);
-    backdrop-filter: blur(20px);
-  }
-  
-  .excel-viewer-container.dark {
-    background: var(--dark-bg);
-    color: var(--dark-text);
-  }
-  
-  .header-container {
-    background: var(--glass-bg);
-    padding: 1.5rem;
-    border-radius: 1rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-md);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(10px);
-  }
-  
-  .dark .header-container {
-    background: var(--dark-surface);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .theme-toggle {
-    margin-left: 1rem;
-  }
-  
-  .drop-zone {
-    border: 2px dashed rgba(99, 102, 241, 0.3);
-    border-radius: 1rem;
-    padding: 3rem 2rem;
-    background: var(--glass-bg);
-    margin: 2rem 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .drop-zone.active {
-    border-color: var(--primary-color);
-    background: linear-gradient(145deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05));
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-  
-  .dark .drop-zone {
-    background: var(--dark-surface);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  .loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    background: var(--glass-bg);
-    border-radius: 1rem;
-    margin: 2rem 0;
-    box-shadow: var(--shadow-md);
-  }
-  
-  .sheet-tabs {
-    margin-bottom: 2rem;
-    background: var(--glass-bg);
-    border-radius: 0.75rem;
-    padding: 0.5rem;
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .file-info {
-    background: var(--glass-bg);
-    padding: 1.5rem;
-    border-radius: 1rem;
-    margin-top: 2rem;
-    box-shadow: var(--shadow-md);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-  }
-  
-  .dark .file-info {
-    background: var(--dark-surface);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Modern scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.4);
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
-  }
+  --primary-color: #6366f1;
+  --secondary-color: #a855f7;
+  --background-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --dark-bg: #121212;
+  --dark-surface: #1e1e1e;
+  --dark-text: #ffffff;
+}
 
-  .excel-viewer-title {
-    transition: color 0.3s ease;
-  }
-  
-  .excel-viewer-title:hover {
-    color: var(--primary-color);
-  }
+.excel-viewer-container {
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  background: var(--background-gradient);
+  backdrop-filter: blur(20px);
+}
+
+.excel-viewer-container.dark {
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+.header-container {
+  background: var(--glass-bg);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dark .header-container {
+  background: var(--dark-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drop-zone {
+  border: 2px dashed rgba(99, 102, 241, 0.3);
+  border-radius: 1rem;
+  padding: 3rem 2rem;
+  background: var(--glass-bg);
+  margin: 2rem 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.data-grid-header {
+  background: #f8f9fa !important;
+  font-weight: 600 !important;
+}
+
+.data-grid-cell {
+  white-space: normal !important;
+  line-height: 1.6;
+  padding: 8px 12px !important;
+}
+
+.number-cell {
+  font-family: 'Roboto Mono', monospace;
+  text-align: right !important;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 16px;
+}
+
+.dark .number-cell {
+  color: #90caf9;
+}
+
+.data-grid-cell {
+  white-space: normal !important;
+  line-height: 1.6;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid rgba(224, 224, 224, 0.3) !important;
+}
+
+.dark .data-grid-cell {
+  border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark .data-grid-header {
+  background: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+}
+
+.dark .data-grid-cell {
+  color: var(--dark-text) !important;
+}
+
+.dark .MuiDataGrid-root {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--dark-text);
+}
+
+.dark .MuiDataGrid-columnHeaders {
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
