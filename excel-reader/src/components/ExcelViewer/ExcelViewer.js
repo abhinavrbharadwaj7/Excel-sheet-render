@@ -12,6 +12,10 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [error, setError] = useState(null);
   const [isDragActive, setIsDragActive] = useState(false);
 
+  const handleTitleClick = () => {
+    window.location.reload();
+  };
+
   const processFile = async (file) => {
     setLoading(true);
     setError(null);
@@ -34,26 +38,53 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
           worksheet.eachRow({ includeEmpty: true }, (row) => {
             const rowValues = row.values.slice(1).map(cell => {
               if (cell === null || cell === undefined) return '';
+              
+              // Handle different cell types
               if (typeof cell === 'object') {
-                if (cell.text) return cell.text.trim();
-                if (cell.formula) return cell.result.toString();
-                if (cell.hyperlink) return cell.hyperlink;
+                // Rich text
+                if (cell.richText) {
+                  return cell.richText.map(part => part.text).join('').trim();
+                }
+                // Hyperlink
+                if (cell.hyperlink && cell.text) {
+                  return cell.text.trim();
+                }
+                // Formula
+                if (cell.formula) {
+                  return cell.result !== undefined ? String(cell.result).trim() : '';
+                }
+                // Date
+                if (cell instanceof Date) {
+                  return cell.toLocaleDateString();
+                }
+                // SharedString or other object types
+                if (cell.text) {
+                  return cell.text.trim();
+                }
+                // If still an object, try to get a meaningful string representation
+                return '';
               }
-              if (typeof cell === 'number') return cell;
-              if (cell instanceof Date) return cell.toISOString();
+              
+              // Handle numbers and other primitive types
+              if (typeof cell === 'number') {
+                return Number.isFinite(cell) ? cell : '';
+              }
+              
               return String(cell).trim();
             });
 
             if (!hasHeaders && rowValues.some(cell => cell)) {
-              currentTable.headers = rowValues.filter(h => h);
+              currentTable.headers = rowValues.map(h => h || 'Unnamed Column');
               hasHeaders = true;
               return;
             }
 
             if (hasHeaders && rowValues.some(cell => cell)) {
               const rowData = currentTable.headers.reduce((acc, header, index) => {
-                const value = rowValues[index] || '';
-                acc[header] = isNaN(Number(value)) ? value : Number(value);
+                const value = rowValues[index];
+                
+                // Convert to number if possible, otherwise keep as string
+                acc[header] = !isNaN(value) && value !== '' ? Number(value) : value;
                 return acc;
               }, {});
               
@@ -110,17 +141,27 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       headerClassName: 'data-grid-header',
       cellClassName: 'data-grid-cell',
       valueFormatter: (params) => {
-        const value = params?.value ?? '';
-        if (typeof value === 'number') {
-          return Number(value).toLocaleString(undefined, {
-            maximumFractionDigits: 6,
-            useGrouping: false
-          });
+        const value = params?.value;
+        if (value === null || value === undefined || value === '') {
+          return '';
         }
-        return value;
+        if (typeof value === 'number') {
+          // Format numbers with appropriate precision
+          return Number.isInteger(value) ? 
+            value.toLocaleString() : 
+            value.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 6
+            });
+        }
+        return String(value);
       },
       renderCell: (params) => {
-        const value = params?.value ?? '';
+        const value = params?.value;
+        if (value === null || value === undefined || value === '') {
+          return <span className="empty-cell">-</span>;
+        }
+        
         return (
           <div 
             className={typeof value === 'number' ? 'number-cell' : ''}
@@ -132,9 +173,9 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
             }}
             title={String(value)}
           >
-            {value || <span className="empty-cell">-</span>}
+            {value}
           </div>
-        )
+        );
       }
     })) || [];
   };
@@ -143,8 +184,15 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     <div className={`excel-viewer-container ${darkMode ? 'dark' : ''}`}>
       <div className="header-container">
         <div className="header-left">
-          <Typography variant="h5">
-            Universal Excel Viewer
+          <Typography 
+            variant="h5" 
+            onClick={handleTitleClick}
+            sx={{ 
+              cursor: 'pointer',
+              '&:hover': { opacity: 0.8 }
+            }}
+          >
+            Excel Viewer
           </Typography>
           <IconButton onClick={onToggleTheme} color="inherit">
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
