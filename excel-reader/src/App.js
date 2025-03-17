@@ -11,12 +11,16 @@ function App() {
     palette: {
       mode,
       primary: { main: '#6366f1' },
-      secondary: { main: '#a855f7' }
+      secondary: { main: '#a855f7' },
+      background: {
+        default: mode === 'dark' ? '#121212' : '#f3f4f6',
+      },
     },
     components: {
       MuiDataGrid: {
         styleOverrides: {
           root: {
+            border: 'none',
             '& .MuiDataGrid-columnHeaders': {
               backgroundColor: mode === 'dark' ? '#2d2d2d' : '#f8f9fa',
             },

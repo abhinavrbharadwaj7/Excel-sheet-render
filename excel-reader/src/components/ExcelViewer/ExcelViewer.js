@@ -27,74 +27,63 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
 
         const sheets = [];
         wb.eachSheet((worksheet) => {
-          let tableData = [];
-          let headers = [];
-          let inMaterialTable = false;
+          const tables = [];
+          let currentTable = { headers: [], rows: [] };
+          let hasHeaders = false;
 
           worksheet.eachRow({ includeEmpty: true }, (row) => {
             const rowValues = row.values.slice(1).map(cell => {
               if (cell === null || cell === undefined) return '';
-              if (typeof cell === 'object' && cell.text) return cell.text.trim();
-              if (typeof cell === 'number') return cell.toString();
+              if (typeof cell === 'object') {
+                if (cell.text) return cell.text.trim();
+                if (cell.formula) return cell.result.toString();
+                if (cell.hyperlink) return cell.hyperlink;
+              }
+              if (typeof cell === 'number') return cell;
               if (cell instanceof Date) return cell.toISOString();
-              return typeof cell === 'string' ? cell.trim() : '';
+              return String(cell).trim();
             });
 
-            if (rowValues[0] === 'Component' && rowValues[1] === 'Substance') {
-              inMaterialTable = true;
-              headers = rowValues.filter(h => h);
+            if (!hasHeaders && rowValues.some(cell => cell)) {
+              currentTable.headers = rowValues.filter(h => h);
+              hasHeaders = true;
               return;
             }
 
-            if (inMaterialTable) {
-              if (rowValues.every(cell => !cell)) {
-                inMaterialTable = false;
-                return;
-              }
-
-              const cleanRow = headers.reduce((acc, header, index) => {
-                let value = rowValues[index] || '-';
-                
-                if (typeof value === 'string' && value.includes('e-')) {
-                  value = Number(value).toFixed(8);
-                }
-
-                if (!isNaN(value) && value !== '-') {
-                  value = Number(value);
-                  if (value.toString().includes('.')) {
-                    value = Number(value.toFixed(6));
-                  }
-                }
-
-                acc[header] = value;
+            if (hasHeaders && rowValues.some(cell => cell)) {
+              const rowData = currentTable.headers.reduce((acc, header, index) => {
+                const value = rowValues[index] || '';
+                acc[header] = isNaN(Number(value)) ? value : Number(value);
                 return acc;
               }, {});
-
-              if (Object.values(cleanRow).some(v => v !== '-')) {
-                tableData.push({ ...cleanRow, id: tableData.length });
-              }
+              
+              currentTable.rows.push({
+                ...rowData,
+                id: `${row.number}-${Math.random().toString(36).slice(2, 9)}`
+              });
             }
           });
 
+          if (currentTable.headers.length > 0 && currentTable.rows.length > 0) {
+            tables.push(currentTable);
+          }
+
           sheets.push({
             name: worksheet.name,
-            table: {
-              headers: headers,
-              rows: tableData
-            }
+            tables: tables
           });
         });
 
         setWorkbook({
           fileName: file.name,
-          sheets: sheets,
+          sheets: sheets.filter(sheet => sheet.tables.length > 0),
           created: new Date(),
           modified: new Date()
         });
         setLoading(false);
       };
     } catch (err) {
-      setError('Error processing file: ' + err.message);
+      setError(`Error processing file: ${err.message}`);
       setLoading(false);
     }
   };
@@ -111,28 +100,43 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     if (file) processFile(file);
   };
 
-  const columns = (headers) => {
-    return headers.map(header => ({
+  const generateColumns = (headers) => {
+    return headers?.map(header => ({
       field: header,
-      headerName: header,
-      width: 200,
+      headerName: header || 'Unnamed Column',
+      minWidth: 180,
+      maxWidth: 400,
+      flex: 1,
       headerClassName: 'data-grid-header',
       cellClassName: 'data-grid-cell',
-      valueFormatter: ({ value }) => {
+      valueFormatter: (params) => {
+        const value = params?.value ?? '';
         if (typeof value === 'number') {
-          return value.toLocaleString(undefined, {
+          return Number(value).toLocaleString(undefined, {
             maximumFractionDigits: 6,
             useGrouping: false
           });
         }
         return value;
       },
-      renderCell: ({ value }) => (
-        <div className={typeof value === 'number' ? 'number-cell' : ''}>
-          {value}
-        </div>
-      )
-    }));
+      renderCell: (params) => {
+        const value = params?.value ?? '';
+        return (
+          <div 
+            className={typeof value === 'number' ? 'number-cell' : ''}
+            style={{ 
+              width: '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap' 
+            }}
+            title={String(value)}
+          >
+            {value || <span className="empty-cell">-</span>}
+          </div>
+        )
+      }
+    })) || [];
   };
 
   return (
@@ -140,7 +144,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       <div className="header-container">
         <div className="header-left">
           <Typography variant="h5">
-            Material Declaration Viewer
+            Universal Excel Viewer
           </Typography>
           <IconButton onClick={onToggleTheme} color="inherit">
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
@@ -172,7 +176,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               {isDragActive ? 'Drop Excel file here' : 'Drag & Drop or Click to Upload'}
             </Typography>
             <Typography variant="body2" color="textSecondary" mt={1}>
-              Supports .xlsx and .xls files
+              Supports all Excel files
             </Typography>
           </label>
         </div>
@@ -193,29 +197,54 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         </Typography>
       )}
 
-      {workbook && workbook.sheets[0]?.table?.headers && (
-        <Box height="75vh" mt={4}>
-          <DataGrid
-            rows={workbook.sheets[0].table.rows}
-            columns={columns(workbook.sheets[0].table.headers)}
-            pageSize={25}
-            rowsPerPageOptions={[25, 50, 100]}
-            components={{ Toolbar: GridToolbar }}
-            density="compact"
-            disableSelectionOnClick
-            sx={{
-              '& .number-cell': {
-                fontFamily: 'Roboto Mono, monospace',
-                justifyContent: 'flex-end',
-                paddingRight: '16px !important'
-              },
-              '& .MuiDataGrid-virtualScroller': {
-                overflowX: 'auto'
-              }
-            }}
-          />
-        </Box>
-      )}
+      {workbook?.sheets[0]?.tables?.map((table, tableIndex) => {
+        const safeHeaders = table.headers?.filter(Boolean) || [];
+        const safeRows = table.rows?.filter(r => 
+          Object.values(r).some(v => v !== '' && v !== null)
+        ) || [];
+
+        return (
+          <Box key={tableIndex} mt={4} height="70vh">
+            <Typography variant="h6" mb={2} fontWeight="600">
+              {workbook.sheets[0].name} - Table {tableIndex + 1} ({safeRows.length} rows)
+            </Typography>
+            
+            {safeHeaders.length > 0 && safeRows.length > 0 ? (
+              <DataGrid
+                rows={safeRows}
+                columns={generateColumns(safeHeaders)}
+                pageSize={25}
+                rowsPerPageOptions={[25, 50, 100]}
+                components={{ Toolbar: GridToolbar }}
+                density="comfortable"
+                disableSelectionOnClick
+                sx={{
+                  '& .number-cell': {
+                    fontFamily: 'Roboto Mono, monospace',
+                    justifyContent: 'flex-end',
+                    paddingRight: '16px !important'
+                  },
+                  '& .empty-cell': {
+                    color: darkMode ? '#888' : '#666',
+                    fontStyle: 'italic'
+                  },
+                  '& .MuiDataGrid-cellContent': {
+                    fontSize: '0.9rem'
+                  },
+                  '& .MuiDataGrid-columnHeaderTitle': {
+                    fontSize: '0.95rem',
+                    fontWeight: 600
+                  }
+                }}
+              />
+            ) : (
+              <Typography color="textSecondary">
+                No displayable data found in this table
+              </Typography>
+            )}
+          </Box>
+        )
+      })}
     </div>
   );
 };

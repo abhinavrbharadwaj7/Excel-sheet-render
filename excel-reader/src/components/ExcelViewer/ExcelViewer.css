@@ -2,7 +2,7 @@
   --primary-color: #6366f1;
   --secondary-color: #a855f7;
   --background-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-bg: rgba(255, 255, 255, 0.97);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --dark-bg: #121212;
@@ -11,12 +11,13 @@
 }
 
 .excel-viewer-container {
-  max-width: 1400px;
-  margin: 2rem auto;
+  max-width: 98vw;
+  margin: 1rem auto;
   padding: 2rem;
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   background: var(--background-gradient);
   backdrop-filter: blur(20px);
+  min-height: 100vh;
 }
 
 .excel-viewer-container.dark {
@@ -33,6 +34,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  backdrop-filter: blur(10px);
 }
 
 .dark .header-container {
@@ -50,55 +52,85 @@
   cursor: pointer;
 }
 
+.drop-zone.active {
+  border-color: var(--primary-color);
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05));
+  transform: translateY(-2px);
+}
+
+.dark .drop-zone {
+  background: var(--dark-surface);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: var(--glass-bg);
+  border-radius: 1rem;
+  margin: 2rem 0;
+}
+
 .data-grid-header {
   background: #f8f9fa !important;
   font-weight: 600 !important;
 }
 
+.dark .data-grid-header {
+  background: #2d2d2d !important;
+}
+
 .data-grid-cell {
   white-space: normal !important;
-  line-height: 1.6;
-  padding: 8px 12px !important;
+  line-height: 1.6 !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.dark .data-grid-cell {
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .number-cell {
   font-family: 'Roboto Mono', monospace;
   text-align: right !important;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 16px;
 }
 
-.dark .number-cell {
-  color: #90caf9;
+.empty-cell {
+  font-style: italic;
+  opacity: 0.7;
+  font-size: 0.85rem;
 }
 
-.data-grid-cell {
-  white-space: normal !important;
-  line-height: 1.6;
-  padding: 8px 12px !important;
-  border-bottom: 1px solid rgba(224, 224, 224, 0.3) !important;
+.MuiDataGrid-virtualScroller {
+  overflow-x: auto !important;
+  min-width: fit-content !important;
 }
 
-.dark .data-grid-cell {
-  border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+.MuiDataGrid-row {
+  max-height: none !important;
 }
 
-.dark .data-grid-header {
-  background: var(--dark-surface) !important;
-  color: var(--dark-text) !important;
+.MuiDataGrid-cell--textLeft {
+  display: flex !important;
+  align-items: center !important;
 }
 
-.dark .data-grid-cell {
-  color: var(--dark-text) !important;
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.dark .MuiDataGrid-root {
-  border-color: rgba(255, 255, 255, 0.15);
-  color: var(--dark-text);
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 4px;
 }
 
-.dark .MuiDataGrid-columnHeaders {
-  border-bottom-color: rgba(255, 255, 255, 0.15);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
 }
