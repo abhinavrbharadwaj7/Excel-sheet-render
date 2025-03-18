@@ -1,19 +1,39 @@
 import React, { useState, useCallback } from 'react';
 import ExcelJS from 'exceljs';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { Box, Typography, CircularProgress, IconButton } from '@mui/material';
+import { Tabs, Tab, Box, Typography, CircularProgress, IconButton } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './ExcelViewer.css';
 
 const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [workbook, setWorkbook] = useState(null);
+  const [activeSheet, setActiveSheet] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDragActive, setIsDragActive] = useState(false);
 
   const handleTitleClick = () => {
     window.location.reload();
+  };
+
+  const processCellValue = (cell) => {
+    try {
+      if (cell === null || cell === undefined) return '';
+      if (typeof cell === 'object') {
+        if (cell.text) return cell.text.trim();
+        if (cell.result) return cell.result.toString();
+        if (cell.hyperlink) return cell.hyperlink;
+        if (cell.formula) return `=${cell.formula}`;
+        return '';
+      }
+      if (cell instanceof Date) return cell.toLocaleDateString();
+      if (typeof cell === 'number') return cell;
+      return String(cell).trim();
+    } catch (error) {
+      console.warn('Error processing cell:', error);
+      return '';
+    }
   };
 
   const processFile = async (file) => {
@@ -32,84 +52,55 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         const sheets = [];
         wb.eachSheet((worksheet) => {
           const tables = [];
-          let currentTable = { headers: [], rows: [] };
-          let hasHeaders = false;
+          let currentTable = null;
+          let headers = [];
+          let inTable = false;
 
           worksheet.eachRow({ includeEmpty: true }, (row) => {
-            const rowValues = row.values.slice(1).map(cell => {
-              if (cell === null || cell === undefined) return '';
-              
-              // Handle different cell types
-              if (typeof cell === 'object') {
-                // Rich text
-                if (cell.richText) {
-                  return cell.richText.map(part => part.text).join('').trim();
-                }
-                // Hyperlink
-                if (cell.hyperlink && cell.text) {
-                  return cell.text.trim();
-                }
-                // Formula
-                if (cell.formula) {
-                  return cell.result !== undefined ? String(cell.result).trim() : '';
-                }
-                // Date
-                if (cell instanceof Date) {
-                  return cell.toLocaleDateString();
-                }
-                // SharedString or other object types
-                if (cell.text) {
-                  return cell.text.trim();
-                }
-                // If still an object, try to get a meaningful string representation
-                return '';
-              }
-              
-              // Handle numbers and other primitive types
-              if (typeof cell === 'number') {
-                return Number.isFinite(cell) ? cell : '';
-              }
-              
-              return String(cell).trim();
-            });
+            const rowValues = row.values.slice(1).map(processCellValue);
+            const isEmptyRow = rowValues.every(cell => !cell);
 
-            if (!hasHeaders && rowValues.some(cell => cell)) {
-              currentTable.headers = rowValues.map(h => h || 'Unnamed Column');
-              hasHeaders = true;
-              return;
-            }
-
-            if (hasHeaders && rowValues.some(cell => cell)) {
-              const rowData = currentTable.headers.reduce((acc, header, index) => {
-                const value = rowValues[index];
-                
-                // Convert to number if possible, otherwise keep as string
-                acc[header] = !isNaN(value) && value !== '' ? Number(value) : value;
-                return acc;
-              }, {});
-              
-              currentTable.rows.push({
-                ...rowData,
-                id: `${row.number}-${Math.random().toString(36).slice(2, 9)}`
-              });
+            if (!inTable && !isEmptyRow) {
+              inTable = true;
+              headers = rowValues;
+              currentTable = {
+                headers: headers.filter(h => h),
+                rows: []
+              };
+            } else if (inTable) {
+              if (isEmptyRow) {
+                if (currentTable.rows.length > 0) {
+                  tables.push(currentTable);
+                }
+                inTable = false;
+                currentTable = null;
+              } else {
+                const rowData = headers.reduce((acc, header, index) => {
+                  acc[header] = rowValues[index] || '';
+                  return acc;
+                }, {});
+                currentTable.rows.push({
+                  ...rowData,
+                  id: `${row.number}-${Math.random().toString(36).slice(2, 9)}`
+                });
+              }
             }
           });
 
-          if (currentTable.headers.length > 0 && currentTable.rows.length > 0) {
+          if (currentTable?.rows.length > 0) {
             tables.push(currentTable);
           }
 
           sheets.push({
             name: worksheet.name,
-            tables: tables
+            tables: tables.filter(t => t.headers.length > 0 && t.rows.length > 0)
           });
         });
 
         setWorkbook({
           fileName: file.name,
           sheets: sheets.filter(sheet => sheet.tables.length > 0),
-          created: new Date(),
-          modified: new Date()
+          created: new Date()
         });
         setLoading(false);
       };
@@ -132,52 +123,20 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   };
 
   const generateColumns = (headers) => {
-    return headers?.map(header => ({
+    return headers.map(header => ({
       field: header,
-      headerName: header || 'Unnamed Column',
+      headerName: header,
       minWidth: 180,
-      maxWidth: 400,
       flex: 1,
-      headerClassName: 'data-grid-header',
-      cellClassName: 'data-grid-cell',
-      valueFormatter: (params) => {
-        const value = params?.value;
-        if (value === null || value === undefined || value === '') {
-          return '';
-        }
-        if (typeof value === 'number') {
-          // Format numbers with appropriate precision
-          return Number.isInteger(value) ? 
-            value.toLocaleString() : 
-            value.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 6
-            });
-        }
-        return String(value);
-      },
-      renderCell: (params) => {
-        const value = params?.value;
-        if (value === null || value === undefined || value === '') {
-          return <span className="empty-cell">-</span>;
-        }
-        
-        return (
-          <div 
-            className={typeof value === 'number' ? 'number-cell' : ''}
-            style={{ 
-              width: '100%',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap' 
-            }}
-            title={String(value)}
-          >
-            {value}
-          </div>
-        );
-      }
-    })) || [];
+      renderCell: (params) => (
+        <div 
+          className={`cell-content ${typeof params.value === 'number' ? 'number-cell' : ''}`}
+          title={String(params.value)}
+        >
+          {params.value || <span className="empty-cell">-</span>}
+        </div>
+      )
+    }));
   };
 
   return (
@@ -245,54 +204,45 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         </Typography>
       )}
 
-      {workbook?.sheets[0]?.tables?.map((table, tableIndex) => {
-        const safeHeaders = table.headers?.filter(Boolean) || [];
-        const safeRows = table.rows?.filter(r => 
-          Object.values(r).some(v => v !== '' && v !== null)
-        ) || [];
+      {workbook && (
+        <div>
+          <Tabs
+            value={activeSheet}
+            onChange={(e, newValue) => setActiveSheet(newValue)}
+            variant="scrollable"
+            sx={{ mb: 2 }}
+          >
+            {workbook.sheets.map((sheet, index) => (
+              <Tab key={index} label={`${sheet.name} (${sheet.tables.length})`} />
+            ))}
+          </Tabs>
 
-        return (
-          <Box key={tableIndex} mt={4} height="70vh">
-            <Typography variant="h6" mb={2} fontWeight="600">
-              {workbook.sheets[0].name} - Table {tableIndex + 1} ({safeRows.length} rows)
-            </Typography>
-            
-            {safeHeaders.length > 0 && safeRows.length > 0 ? (
+          {workbook.sheets[activeSheet]?.tables?.map((table, tableIndex) => (
+            <Box key={tableIndex} mt={4}>
+              <Typography variant="h6" mb={2}>
+                Table {tableIndex + 1} ({table.rows.length} rows)
+              </Typography>
               <DataGrid
-                rows={safeRows}
-                columns={generateColumns(safeHeaders)}
+                rows={table.rows}
+                columns={generateColumns(table.headers)}
+                autoHeight
                 pageSize={25}
                 rowsPerPageOptions={[25, 50, 100]}
                 components={{ Toolbar: GridToolbar }}
                 density="comfortable"
                 disableSelectionOnClick
                 sx={{
-                  '& .number-cell': {
-                    fontFamily: 'Roboto Mono, monospace',
-                    justifyContent: 'flex-end',
-                    paddingRight: '16px !important'
-                  },
-                  '& .empty-cell': {
-                    color: darkMode ? '#888' : '#666',
-                    fontStyle: 'italic'
-                  },
-                  '& .MuiDataGrid-cellContent': {
-                    fontSize: '0.9rem'
-                  },
-                  '& .MuiDataGrid-columnHeaderTitle': {
-                    fontSize: '0.95rem',
-                    fontWeight: 600
+                  '& .cell-content': {
+                    width: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
                   }
                 }}
               />
-            ) : (
-              <Typography color="textSecondary">
-                No displayable data found in this table
-              </Typography>
-            )}
-          </Box>
-        )
-      })}
+            </Box>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

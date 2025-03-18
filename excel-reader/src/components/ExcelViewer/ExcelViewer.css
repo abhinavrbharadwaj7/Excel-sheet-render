@@ -89,6 +89,8 @@
   font-size: 0.9rem;
   max-height: none !important;
   overflow: visible !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
 }
 
 .dark .data-grid-cell {
@@ -99,6 +101,7 @@
 .number-cell {
   font-family: 'Roboto Mono', monospace;
   text-align: right !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .empty-cell {
@@ -119,6 +122,22 @@
 .MuiDataGrid-cell--textLeft {
   display: flex !important;
   align-items: center !important;
+}
+
+.MuiTabs-root {
+  background: var(--glass-bg);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.dark .MuiTabs-root {
+  background: var(--dark-surface);
+}
+
+.MuiTab-root {
+  text-transform: none !important;
+  font-weight: 500 !important;
 }
 
 ::-webkit-scrollbar {
