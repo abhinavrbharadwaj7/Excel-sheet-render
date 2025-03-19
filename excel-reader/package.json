@@ -19,11 +19,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false NODE_ENV=production node_modules/.bin/react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "postinstall": "npm install",
-    "vercel-build": "npm run build"
+    "eject": "react-scripts eject"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "eslintConfig": {
     "extends": [
