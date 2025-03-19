@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useMemo } from 'react';
 import { StyledEngineProvider } from '@mui/material/styles';
 import ExcelViewer from './components/ExcelViewer/ExcelViewer';
@@ -14,20 +15,27 @@ function App() {
       secondary: { main: '#a855f7' },
       background: {
         default: mode === 'dark' ? '#121212' : '#f3f4f6',
+        paper: mode === 'dark' ? '#1e1e1e' : '#ffffff',
       },
     },
     components: {
       MuiDataGrid: {
         styleOverrides: {
-          root: {
+          root: ({ theme }) => ({
             border: 'none',
+            backgroundColor: theme.palette.background.paper,
             '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: mode === 'dark' ? '#2d2d2d' : '#f8f9fa',
+              backgroundColor: theme.palette.mode === 'dark' ? 
+                '#2d2d2d' : 
+                '#f8f9fa',
+              color: theme.palette.text.primary,
             },
             '& .MuiDataGrid-cell': {
-              borderBottomColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : '#f0f0f0'
+              borderBottomColor: theme.palette.mode === 'dark' ? 
+                'rgba(255,255,255,0.1)' : 
+                '#f0f0f0'
             }
-          }
+          })
         }
       }
     }
