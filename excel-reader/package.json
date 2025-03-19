@@ -19,10 +19,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false && npx react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "vercel-build": "npx react-scripts build"
+    "postinstall": "npm install",
+    "vercel-build": "npm run build"
   },
   "eslintConfig": {
     "extends": [
