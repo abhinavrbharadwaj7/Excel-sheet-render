@@ -1,19 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "build",
-  "installCommand": "npm install",
   "framework": "create-react-app",
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
   ]
 }
