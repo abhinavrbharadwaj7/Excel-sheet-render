@@ -1,82 +1,197 @@
 /* components/ExcelViewer/ExcelViewer.css */
 .excel-viewer-container {
-  max-width: 98vw;
-  margin: 1rem auto;
   padding: 2rem;
+  max-width: 100vw;
   min-height: 100vh;
-  background: #ffffff;
+  background: #fff;
 }
 
 .excel-viewer-container.dark {
   background: #121212;
-  color: #ffffff;
+  color: white;
 }
 
 .header-container {
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 2rem;
+  background: rgba(245, 245, 245, 0.9);
+  border-radius: 8px;
 }
 
 .dark .header-container {
   background: rgba(30, 30, 30, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .drop-zone {
   border: 2px dashed #6366f1;
   border-radius: 8px;
-  padding: 3rem 2rem;
+  padding: 3rem;
+  text-align: center;
   margin: 2rem 0;
   transition: all 0.3s ease;
-  background: rgba(99, 102, 241, 0.05);
 }
 
 .drop-zone.active {
   background: rgba(99, 102, 241, 0.1);
-  transform: translateY(-2px);
 }
 
-.data-grid-container {
-  margin-top: 2rem;
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
 }
 
-.table-container {
-  margin-top: 1.5rem;
-  background: white;
+.error-message {
+  padding: 2rem;
+  background: #ffebee;
   border-radius: 8px;
-  overflow: hidden;
+  margin: 2rem 0;
 }
 
-.dark .table-container {
-  background: #1e1e1e;
+/* Row number styling */
+.row-number-header .MuiDataGrid-columnHeaderTitleContainer {
+  justify-content: center !important;
 }
 
-.number-cell {
-  font-family: monospace;
-  text-align: right;
+.row-number-header {
+  background-color: #f8f9fa !important;
 }
 
-.empty-cell {
+.row-number-cell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
   color: #666;
-  font-style: italic;
+  font-size: 0.9rem;
 }
 
-.dark .empty-cell {
+.row-number-cell {
+  color: #666;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.dark .row-number-cell {
   color: #999;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.dark .row-number-header {
+  background-color: #2d2d2d !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #6366f1;
-  border-radius: 4px;
+/* Cell content styling */
+.cell-content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 8px;
+  position: relative;
+}
+
+/* Cell address indicator */
+.cell-address {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 0.6rem;
+  color: #666;
+  opacity: 0.5;
+}
+
+.cell-address {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 0.65rem;
+  opacity: 0.5;
+  color: #666;
+}
+
+.dark .cell-address {
+  color: #999;
+}
+
+.dark .row-number-cell,
+.dark .cell-address {
+  color: #999;
+}
+
+/* Merged cell styling */
+.merged-cell {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  padding: 0 8px;
+}
+
+.dark .merged-cell {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.merged-badge {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  font-size: 0.6rem;
+  color: #666;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.dark .merged-badge {
+  color: #999;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.empty-cell {
+  color: #999;
+  font-style: italic;
+}
+
+.MuiDataGrid-root {
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+.MuiDataGrid-columnHeaders {
+  background: #f8f9fa !important;
+}
+
+.dark .MuiDataGrid-columnHeaders {
+  background: #2d2d2d !important;
+}
+
+.MuiDataGrid-virtualScroller {
+  min-width: fit-content !important;
+}
+
+.MuiDataGrid-viewport {
+  min-width: 100% !important;
 }
