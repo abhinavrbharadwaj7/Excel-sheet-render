@@ -6,6 +6,7 @@ import { Tabs, Tab, Typography, CircularProgress, IconButton } from '@mui/materi
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './ExcelViewer.css';
+import { processExcelFile } from '../../utils/excelProcessor';
 
 const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [workbook, setWorkbook] = useState(null);
@@ -27,136 +28,19 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     if (file) processFile(file);
   };
 
-  // Cell processing utilities
-  const safeToString = (value) => {
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'object') {
-      if (value instanceof Date) return value.toLocaleDateString();
-      if (value.richText) return value.richText.map(t => t.text).join('');
-      if (value.hyperlink) return value.hyperlink.text || value.hyperlink;
-      if (value.error) return `#${value.error}`;
-      return Object.values(value).join(' ');
-    }
-    return String(value).trim();
-  };
-
-  const processCellValue = (cell) => {
-    try {
-      if (!cell) return '';
-      if (cell.type === ExcelJS.ValueType.Formula) return safeToString(cell.result);
-      if (cell.type === ExcelJS.ValueType.Error) return `#${cell.value?.error || 'ERROR'}`;
-      if (cell.richText) return cell.richText.map(t => t.text).join('');
-      if (cell.hyperlink) return cell.hyperlink.text || cell.hyperlink;
-      return safeToString(cell.value);
-    } catch (error) {
-      console.warn('Cell processing error:', error);
-      return '';
-    }
-  };
-
-  const getExcelColumnName = (num) => {
-    let columnName = '';
-    while (num > 0) {
-      const remainder = (num - 1) % 26;
-      columnName = String.fromCharCode(65 + remainder) + columnName;
-      num = Math.floor((num - 1) / 26);
-    }
-    return columnName || 'A';
-  };
-
-  const processMergedCells = (worksheet) => {
-    const mergedMap = new Map();
-    try {
-      worksheet.mergedCells?.forEach(merge => {
-        const { top, left, bottom, right } = merge;
-        const mainCell = worksheet.getCell(top, left);
-        const value = processCellValue(mainCell);
-        
-        for (let row = top; row <= bottom; row++) {
-          for (let col = left; col <= right; col++) {
-            mergedMap.set(`${row}-${col}`, {
-              value,
-              isMain: row === top && col === left,
-              colSpan: right - left + 1,
-              rowSpan: bottom - top + 1
-            });
-          }
-        }
-      });
-    } catch (error) {
-      console.warn('Merged cell processing error:', error);
-    }
-    return mergedMap;
-  };
-
   const processFile = async (file) => {
     setLoading(true);
     setError(null);
     
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const buffer = e.target.result;
-          const wb = new ExcelJS.Workbook();
-          await wb.xlsx.load(buffer);
-
-          const sheets = wb.worksheets.map(worksheet => {
-            let maxCol = 0;
-            worksheet.eachRow((row) => {
-              maxCol = Math.max(maxCol, row._cells.length);
-            });
-
-            // Generate Excel-style column headers (A, B, C...)
-            const headers = Array.from({ length: maxCol }, (_, i) => ({
-              field: getExcelColumnName(i + 1),
-              headerName: getExcelColumnName(i + 1)
-            }));
-
-            // Process rows with Excel-style row numbers
-            const rows = [];
-            worksheet.eachRow((row, rowNumber) => {
-              if (rowNumber === 1) return;
-
-              const rowData = { 
-                id: `row-${rowNumber}`,
-                rowNumber
-              };
-
-              let hasData = false;
-              headers.forEach((header, colIndex) => {
-                const cell = row.getCell(colIndex + 1);
-                const value = processCellValue(cell);
-                if (value !== '') {
-                  rowData[header.field] = value;
-                  hasData = true;
-                }
-              });
-
-              if (hasData) {
-                rows.push(rowData);
-              }
-            });
-
-            return {
-              name: worksheet.name,
-              headers,
-              rows
-            };
-          });
-
-          setWorkbook({
-            fileName: file.name,
-            sheets: sheets.filter(sheet => sheet.rows.length > 0)
-          });
-        } catch (err) {
-          setError(err.message || 'File processing failed');
-        }
-        setLoading(false);
-      };
-      reader.readAsArrayBuffer(file);
+      const sheets = await processExcelFile(file);
+      setWorkbook({
+        fileName: file.name,
+        sheets: sheets.filter(s => s.rows.length > 0)
+      });
     } catch (err) {
-      setError(err.message || 'File read error');
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -164,33 +48,36 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const generateColumns = (headers) => {
     return [
       {
-        field: 'rowNumber',
-        headerName: '#',
+        field: '__rowNum',
+        headerName: '',
         width: 50,
         sortable: false,
         filterable: false,
-        headerClassName: 'bold-header row-number-header',
         renderCell: (params) => (
           <div className="row-number-cell">
-            {params.value}
+            {params.row.__rowNum}
           </div>
         )
       },
-      ...headers.map(header => ({
-        field: header.field,
-        headerName: header.headerName,
-        minWidth: 150,
+      ...headers.map(({ id, label }) => ({
+        field: id,
+        headerName: label,
         flex: 1,
-        headerClassName: 'bold-header',
-        renderCell: (params) => (
-          <div 
-            className={`cell-content ${typeof params.value === 'number' ? 'number-cell' : ''}`}
-            title={`${header.field}${params.row.rowNumber}: ${String(params.value || '')}`}
-          >
-            {params.value || <span className="empty-cell">-</span>}
-            <span className="cell-address">{header.field}{params.row.rowNumber}</span>
-          </div>
-        )
+        minWidth: 120,
+        renderCell: (params) => {
+          const cell = params.value || {};
+          return (
+            <div 
+              className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
+              style={{
+                gridRow: `span ${cell.rowSpan || 1}`,
+                gridColumn: `span ${cell.colSpan || 1}`
+              }}
+            >
+              {cell.value || ''}
+            </div>
+          );
+        }
       }))
     ];
   };
@@ -257,24 +144,21 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
 
           <DataGrid
             rows={workbook.sheets[activeSheet].rows}
-            columns={generateColumns(
-              workbook.sheets[activeSheet].headers,
-              workbook.sheets[activeSheet].mergedMap
-            )}
+            columns={generateColumns(workbook.sheets[activeSheet].headers)}
+            getRowId={(row) => row.id}
             autoHeight
-            pageSize={10}
-            components={{ Toolbar: GridToolbar }}
+            pageSize={100}
+            rowHeight={25}
+            headerHeight={32}
+            hideFooter
+            disableColumnMenu
             disableSelectionOnClick
+            components={{
+              Toolbar: GridToolbar,
+            }}
             sx={{
               '& .MuiDataGrid-cell': {
-                display: 'flex',
-                alignItems: 'center',
-                position: 'relative',
-                padding: '0 !important'
-              },
-              '& .MuiDataGrid-virtualScroller': {
-                overflowX: 'auto',
-                overflowY: 'scroll'
+                padding: '0 8px',
               }
             }}
           />
