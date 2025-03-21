@@ -137,46 +137,50 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
 
       {workbook?.sheets?.[activeSheet] && (
         <div className="data-grid-container">
-          <Tabs value={activeSheet} onChange={(_, v) => setActiveSheet(v)} variant="scrollable">
+          <Tabs 
+            value={activeSheet} 
+            onChange={(_, v) => setActiveSheet(v)} 
+            variant="scrollable"
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
             {workbook.sheets.map((sheet, i) => (
               <Tab key={i} label={sheet.name} sx={{ textTransform: 'none' }} />
             ))}
           </Tabs>
 
-          <DataGrid
-            rows={workbook.sheets[activeSheet].rows}
-            columns={generateColumns(workbook.sheets[activeSheet].headers)}
-            getRowId={(row) => row.id}
-            autoHeight
-            pageSize={100}
-            rowHeight={25}
-            headerHeight={32}
-            hideFooter
-            disableColumnMenu
-            disableSelectionOnClick
-            components={{
-              Toolbar: GridToolbar,
-            }}
-            getEstimatedRowHeight={() => 50}
-            getRowHeight={() => 'auto'}
-            sx={{
-              '& .MuiDataGrid-cell': {
-                padding: '8px',
-                overflow: 'visible !important',
-                whiteSpace: 'normal',
-                height: 'auto'
-              },
-              '& .MuiDataGrid-row': {
-                height: 'auto !important'
-              },
-              '& .MuiDataGrid-main': {
-                overflow: 'visible'
-              },
-              '& .MuiDataGrid-virtualScroller': {
-                overflow: 'visible'
-              }
-            }}
-          />
+          <div className="table-container">
+            <DataGrid
+              rows={workbook.sheets[activeSheet].rows}
+              columns={generateColumns(workbook.sheets[activeSheet].headers)}
+              getRowId={(row) => row.id}
+              autoHeight={false}  // Changed to false for scrolling
+              pageSize={100}
+              rowHeight={40}
+              headerHeight={40}
+              hideFooter
+              disableColumnMenu
+              disableSelectionOnClick
+              disableExtendRowFullWidth
+              components={{
+                Toolbar: GridToolbar,
+              }}
+              sx={{
+                height: '100%',
+                '& .MuiDataGrid-cell': {
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  padding: '0 8px'
+                },
+                '& .MuiDataGrid-row': {
+                  maxHeight: 'none !important'
+                },
+                '& .MuiDataGrid-virtualScrollerContent': {
+                  overflow: 'auto'
+                }
+              }}
+            />
+          </div>
         </div>
       )}
     </div>
