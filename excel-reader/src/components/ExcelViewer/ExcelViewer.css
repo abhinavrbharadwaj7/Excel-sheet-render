@@ -4,6 +4,7 @@
   max-width: 100vw;
   min-height: 100vh;
   background: #fff;
+  overflow-x: auto; /* Enable horizontal scrolling */
 }
 
 .excel-viewer-container.dark {
@@ -100,13 +101,11 @@
 /* Cell content styling */
 .cell-content {
   width: 100%;
-  height: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 8px;
-  position: relative;
-  padding: 4px 8px;
+  min-height: 100%;
+  overflow: visible; /* Show overflow content */
+  white-space: normal; /* Allow text wrapping */
+  line-height: 1.2;
+  padding: 8px;
   display: flex;
   align-items: center;
 }
@@ -146,7 +145,10 @@
   display: flex !important;
   align-items: center;
   justify-content: flex-start;
-  height: 100%;
+  height: auto !important;
+  white-space: normal !important;
+  line-height: 1.2;
+  overflow: visible !important;
   width: 100%;
   position: relative;
   padding: 0 8px;
@@ -183,6 +185,7 @@
   border-radius: 8px !important;
   font-family: 'Calibri', sans-serif !important;
   border: 1px solid #e0e0e0 !important;
+  overflow: visible !important;
 }
 
 .MuiDataGrid-columnHeaders {
@@ -220,6 +223,11 @@
   border-right: 1px solid #e0e0e0 !important;
   border-bottom: 1px solid #e0e0e0 !important;
   padding: 0 !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  height: auto !important;
+  min-height: 52px !important;
+  line-break: anywhere;
 }
 
 .number-cell {
@@ -260,4 +268,13 @@
 .dark .row-number-cell {
   background-color: #2d2d2d;
   border-right-color: #333 !important;
+}
+
+.data-grid-container {
+  min-width: fit-content;
+  overflow-x: auto;
+}
+
+.MuiDataGrid-row {
+  height: auto !important;
 }

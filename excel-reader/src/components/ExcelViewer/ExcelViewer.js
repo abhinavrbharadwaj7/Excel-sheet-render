@@ -63,7 +63,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         field: id,
         headerName: label,
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => {
           const cell = params.value || {};
           return (
@@ -71,7 +71,8 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
               style={{
                 gridRow: `span ${cell.rowSpan || 1}`,
-                gridColumn: `span ${cell.colSpan || 1}`
+                gridColumn: `span ${cell.colSpan || 1}`,
+                minHeight: '100%'
               }}
             >
               {cell.value || ''}
@@ -156,9 +157,23 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
             components={{
               Toolbar: GridToolbar,
             }}
+            getEstimatedRowHeight={() => 50}
+            getRowHeight={() => 'auto'}
             sx={{
               '& .MuiDataGrid-cell': {
-                padding: '0 8px',
+                padding: '8px',
+                overflow: 'visible !important',
+                whiteSpace: 'normal',
+                height: 'auto'
+              },
+              '& .MuiDataGrid-row': {
+                height: 'auto !important'
+              },
+              '& .MuiDataGrid-main': {
+                overflow: 'visible'
+              },
+              '& .MuiDataGrid-virtualScroller': {
+                overflow: 'visible'
               }
             }}
           />
