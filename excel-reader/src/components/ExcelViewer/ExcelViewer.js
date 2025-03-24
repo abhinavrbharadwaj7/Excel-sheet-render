@@ -66,16 +66,19 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         minWidth: 150,
         renderCell: (params) => {
           const cell = params.value || {};
+          const value = cell.value || '';
+          const needsMerge = value.length > 50; // Threshold for merging
+          
           return (
             <div 
-              className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
+              className={`cell-content ${needsMerge || cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
               style={{
-                gridRow: `span ${cell.rowSpan || 1}`,
+                gridRow: `span ${cell.rowSpan || (needsMerge ? 2 : 1)}`,
                 gridColumn: `span ${cell.colSpan || 1}`,
-                minHeight: '100%'
+                minHeight: needsMerge ? '100%' : 'auto'
               }}
             >
-              {cell.value || ''}
+              {value}
             </div>
           );
         }
@@ -155,8 +158,9 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               getRowId={(row) => row.id}
               autoHeight={false}  // Changed to false for scrolling
               pageSize={100}
-              rowHeight={40}
-              headerHeight={40}
+              rowHeight={52} // Set default row height
+              getRowHeight={() => 'auto'}
+              getEstimatedRowHeight={() => 100}
               hideFooter
               disableColumnMenu
               disableSelectionOnClick
@@ -167,16 +171,15 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               sx={{
                 height: '100%',
                 '& .MuiDataGrid-cell': {
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  padding: '0 8px'
+                  padding: 0,
+                  maxHeight: '200px !important',
+                  overflow: 'hidden !important'
                 },
                 '& .MuiDataGrid-row': {
-                  maxHeight: 'none !important'
+                  maxHeight: '200px !important'
                 },
                 '& .MuiDataGrid-virtualScrollerContent': {
-                  overflow: 'auto'
+                  overflow: 'hidden'
                 }
               }}
             />

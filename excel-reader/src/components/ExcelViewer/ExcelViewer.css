@@ -101,13 +101,15 @@
 /* Cell content styling */
 .cell-content {
   width: 100%;
-  min-height: 100%;
-  overflow: visible; /* Show overflow content */
-  white-space: normal; /* Allow text wrapping */
-  line-height: 1.2;
+  height: 100%;
   padding: 8px;
   display: flex;
   align-items: center;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+  max-height: 150px; /* Limit maximum height */
+  overflow-y: auto; /* Add scroll for overflow */
 }
 
 /* Cell address indicator */
@@ -142,16 +144,15 @@
 .merged-cell {
   background: rgba(99, 102, 241, 0.05);
   border: 1px solid rgba(99, 102, 241, 0.1);
-  display: flex !important;
-  align-items: center;
-  justify-content: flex-start;
+  padding: 8px;
   height: auto !important;
+  max-height: 200px; /* Slightly larger max height for merged cells */
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start; /* Align to top */
   white-space: normal !important;
-  line-height: 1.2;
-  overflow: visible !important;
-  width: 100%;
-  position: relative;
-  padding: 0 8px;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 .dark .merged-cell {
@@ -228,6 +229,8 @@
   height: auto !important;
   min-height: 52px !important;
   line-break: anywhere;
+  max-height: 200px !important;
+  overflow: hidden !important;
 }
 
 .number-cell {
