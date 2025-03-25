@@ -281,3 +281,37 @@
 .MuiDataGrid-row {
   height: auto !important;
 }
+
+/* Header cell styling */
+.header-cell {
+  background-color: #f3f4f6 !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+}
+
+.dark .header-cell {
+  background-color: #2d2d2d !important;
+  border-bottom-color: #404040 !important;
+}
+
+/* Table section styling */
+.section-start {
+  border-top: 16px solid transparent !important;
+}
+
+/* Styled cells */
+.styled-cell {
+  border: 1px solid #e5e7eb;
+}
+
+.styled-cell.bold {
+  font-weight: 600;
+}
+
+.styled-cell.align-right {
+  justify-content: flex-end;
+}
+
+.styled-cell.align-center {
+  justify-content: center;
+}

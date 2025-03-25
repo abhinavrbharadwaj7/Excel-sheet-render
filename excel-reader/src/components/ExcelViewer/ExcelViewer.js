@@ -59,26 +59,36 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
           </div>
         )
       },
-      ...headers.map(({ id, label }) => ({
-        field: id,
-        headerName: label,
+      ...headers.map((header, index) => ({
+        field: `col${index + 1}`,
+        headerName: String.fromCharCode(65 + index), // Use A, B, C... for headers
         flex: 1,
         minWidth: 150,
+        sortable: false, // Disable sorting
+        filterable: false, // Disable filtering
         renderCell: (params) => {
           const cell = params.value || {};
-          const value = cell.value || '';
-          const needsMerge = value.length > 50; // Threshold for merging
+          const style = cell.style || {};
           
+          const cellClasses = [
+            'cell-content',
+            style.bold ? 'bold' : '',
+            style.align ? `align-${style.align}` : '',
+            params.row.isHeader ? 'header-cell' : '',
+            params.row.sectionIndex > 0 && 
+            params.api.getRowIndex(params.row.id) === 0 ? 'section-start' : ''
+          ].filter(Boolean).join(' ');
+
           return (
             <div 
-              className={`cell-content ${needsMerge || cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
+              className={cellClasses}
               style={{
-                gridRow: `span ${cell.rowSpan || (needsMerge ? 2 : 1)}`,
-                gridColumn: `span ${cell.colSpan || 1}`,
-                minHeight: needsMerge ? '100%' : 'auto'
+                ...(style.background && {
+                  backgroundColor: `#${style.background.substring(2)}`
+                })
               }}
             >
-              {value}
+              {cell.value || ''}
             </div>
           );
         }
@@ -156,29 +166,17 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               rows={workbook.sheets[activeSheet].rows}
               columns={generateColumns(workbook.sheets[activeSheet].headers)}
               getRowId={(row) => row.id}
-              autoHeight={false}  // Changed to false for scrolling
-              pageSize={100}
-              rowHeight={52} // Set default row height
-              getRowHeight={() => 'auto'}
-              getEstimatedRowHeight={() => 100}
+              autoHeight
               hideFooter
               disableColumnMenu
               disableSelectionOnClick
-              disableExtendRowFullWidth
               components={{
-                Toolbar: GridToolbar,
+                Toolbar: null, // Remove the toolbar completely
               }}
               sx={{
-                height: '100%',
                 '& .MuiDataGrid-cell': {
-                  padding: 0,
-                  maxHeight: '200px !important',
-                  overflow: 'hidden !important'
-                },
-                '& .MuiDataGrid-row': {
-                  maxHeight: '200px !important'
-                },
-                '& .MuiDataGrid-virtualScrollerContent': {
+                  padding: '0 8px',
+                  maxHeight: '200px',
                   overflow: 'hidden'
                 }
               }}
