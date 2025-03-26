@@ -70,7 +70,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         filterable: false,
         renderCell: (params) => (
           <div className="row-number-cell">
-            {params.row.__rowNum}
+            {String(params.row.__rowNum)}
           </div>
         )
       },
@@ -86,8 +86,14 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
           if (!cell) return '';
           
           return (
-            <div className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}>
-              {cell.value}
+            <div 
+              className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
+              style={{
+                gridRow: `span ${cell.rowSpan || 1}`,
+                gridColumn: `span ${cell.colSpan || 1}`
+              }}
+            >
+              {String(cell.value || '')}
             </div>
           );
         }
