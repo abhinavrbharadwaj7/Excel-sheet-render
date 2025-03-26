@@ -65,7 +65,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       {
         field: '__rowNum',
         headerName: '',
-        width: 50,
+        width: 60,
         sortable: false,
         filterable: false,
         renderCell: (params) => (
@@ -78,7 +78,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         field: `col${index + 1}`,
         headerName: String.fromCharCode(65 + index), // A, B, C, etc.
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
@@ -170,28 +170,26 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               disableColumnMenu
               disableSelectionOnClick
               getRowHeight={() => 'auto'}
+              getEstimatedRowHeight={() => 100}
               components={{
                 Toolbar: null,
               }}
               sx={{
+                '& .MuiDataGrid-main': {
+                  overflow: 'visible'
+                },
                 '& .MuiDataGrid-cell': {
                   padding: 0,
-                  border: '1px solid #e0e0e0',
-                  whiteSpace: 'normal',
-                  wordWrap: 'break-word',
-                  height: 'auto',
-                  maxHeight: 'none',
-                  overflow: 'visible',
+                  border: '1px solid #e0e0e0'
                 },
-                '& .MuiDataGrid-row': {
-                  maxHeight: 'none !important',
-                },
-                '& .MuiDataGrid-renderingZone': {
-                  maxHeight: 'none !important',
+                '& .MuiDataGrid-columnHeader': {
+                  padding: '12px',
+                  backgroundColor: '#f8f9fa',
+                  borderBottom: '2px solid #e0e0e0',
+                  fontWeight: 600
                 },
                 '& .MuiDataGrid-virtualScroller': {
-                  height: 'auto !important',
-                  overflow: 'visible !important'
+                  overflow: 'visible'
                 }
               }}
             />

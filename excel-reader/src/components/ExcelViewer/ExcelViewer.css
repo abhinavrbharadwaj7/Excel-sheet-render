@@ -102,13 +102,15 @@
 .cell-content {
   width: 100%;
   min-height: 100%;
-  padding: 8px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: normal !important;
+  word-break: normal;
   line-height: 1.5;
-  overflow: visible;
+  font-family: 'Calibri', sans-serif;
+  font-size: 14px;
+  overflow: visible !important;
 }
 
 /* Cell address indicator */
@@ -176,11 +178,9 @@
 }
 
 .MuiDataGrid-root {
-  border: none !important;
-  border-radius: 8px !important;
-  font-family: 'Calibri', sans-serif !important;
   border: 1px solid #e0e0e0 !important;
-  overflow: visible !important;
+  font-family: 'Calibri', sans-serif !important;
+  margin: 24px 0;
 }
 
 .MuiDataGrid-columnHeaders {
@@ -204,7 +204,7 @@
 }
 
 .table-container {
-  margin-bottom: 2rem;
+  margin: 32px 0;
   background: white;
   border-radius: 8px;
   overflow: hidden;
@@ -218,18 +218,15 @@
 
 /* Remove excessive scrollbars and height limits */
 .MuiDataGrid-cell {
-  border-right: 1px solid #e0e0e0 !important;
-  border-bottom: 1px solid #e0e0e0 !important;
-  padding: 8px !important;
-  overflow: hidden !important;
+  border: 1px solid #e0e0e0 !important;
+  padding: 12px !important;
+  overflow: visible !important;
   white-space: normal !important;
   height: auto !important;
-  min-height: 52px !important;
+  min-height: unset !important;
   line-break: anywhere;
   max-height: none !important;
   line-height: 1.5 !important;
-  padding: 8px !important;
-  overflow: visible !important;
 }
 
 .number-cell {
@@ -279,7 +276,7 @@
 
 .MuiDataGrid-row {
   height: auto !important;
-  min-height: 40px !important;
+  min-height: unset !important;
 }
 
 .MuiDataGrid-renderingZone {
