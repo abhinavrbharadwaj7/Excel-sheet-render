@@ -82,10 +82,12 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         sortable: false,
         filterable: false,
         renderCell: (params) => {
-          const cell = params.value || {};
+          const cell = params.value;
+          if (!cell) return '';
+          
           return (
             <div className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}>
-              {cell.value || ''}
+              {cell.value}
             </div>
           );
         }
