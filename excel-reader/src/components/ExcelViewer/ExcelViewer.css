@@ -98,18 +98,17 @@
   background-color: #2d2d2d !important;
 }
 
-/* Cell content styling */
+/* Simplify cell content styling */
 .cell-content {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   padding: 8px;
   display: flex;
   align-items: center;
-  white-space: normal;
+  white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.5;
-  max-height: 150px; /* Limit maximum height */
-  overflow-y: auto; /* Add scroll for overflow */
+  overflow: visible;
 }
 
 /* Cell address indicator */
@@ -140,19 +139,14 @@
   color: #999;
 }
 
-/* Merged cell styling */
+/* Simplify merged cell styling */
 .merged-cell {
   background: rgba(99, 102, 241, 0.05);
   border: 1px solid rgba(99, 102, 241, 0.1);
   padding: 8px;
-  height: auto !important;
-  max-height: 200px; /* Slightly larger max height for merged cells */
-  overflow-y: auto;
+  height: 100%;
   display: flex;
-  align-items: flex-start; /* Align to top */
-  white-space: normal !important;
-  word-break: break-word;
-  line-height: 1.5;
+  align-items: center;
 }
 
 .dark .merged-cell {
@@ -201,6 +195,8 @@
 
 .MuiDataGrid-virtualScroller {
   min-width: fit-content !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 .MuiDataGrid-viewport {
@@ -220,17 +216,20 @@
   background: #1e1e1e;
 }
 
+/* Remove excessive scrollbars and height limits */
 .MuiDataGrid-cell {
   border-right: 1px solid #e0e0e0 !important;
   border-bottom: 1px solid #e0e0e0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
+  padding: 8px !important;
+  overflow: hidden !important;
   white-space: normal !important;
   height: auto !important;
   min-height: 52px !important;
   line-break: anywhere;
-  max-height: 200px !important;
-  overflow: hidden !important;
+  max-height: none !important;
+  line-height: 1.5 !important;
+  padding: 8px !important;
+  overflow: visible !important;
 }
 
 .number-cell {
@@ -280,6 +279,11 @@
 
 .MuiDataGrid-row {
   height: auto !important;
+  min-height: 40px !important;
+}
+
+.MuiDataGrid-renderingZone {
+  max-height: none !important;
 }
 
 /* Header cell styling */
@@ -294,9 +298,9 @@
   border-bottom-color: #404040 !important;
 }
 
-/* Table section styling */
+/* Remove section spacing - keep it clean */
 .section-start {
-  border-top: 16px solid transparent !important;
+  border-top: none !important;
 }
 
 /* Styled cells */

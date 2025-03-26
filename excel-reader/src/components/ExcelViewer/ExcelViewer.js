@@ -33,13 +33,28 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     setError(null);
     
     try {
+      // Validate file type
+      const validTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel'
+      ];
+      
+      if (!validTypes.includes(file.type)) {
+        throw new Error('Please upload a valid Excel file (.xlsx or .xls)');
+      }
+
       const sheets = await processExcelFile(file);
+      if (sheets.length === 0) {
+        throw new Error('No data found in the Excel file');
+      }
+      
       setWorkbook({
         fileName: file.name,
-        sheets: sheets.filter(s => s.rows.length > 0)
+        sheets
       });
     } catch (err) {
       setError(err.message);
+      console.error('File processing error:', err);
     } finally {
       setLoading(false);
     }
@@ -59,35 +74,17 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
           </div>
         )
       },
-      ...headers.map((header, index) => ({
+      ...headers.map((_, index) => ({
         field: `col${index + 1}`,
-        headerName: String.fromCharCode(65 + index), // Use A, B, C... for headers
+        headerName: String.fromCharCode(65 + index), // A, B, C, etc.
         flex: 1,
-        minWidth: 150,
-        sortable: false, // Disable sorting
-        filterable: false, // Disable filtering
+        minWidth: 120,
+        sortable: false,
+        filterable: false,
         renderCell: (params) => {
           const cell = params.value || {};
-          const style = cell.style || {};
-          
-          const cellClasses = [
-            'cell-content',
-            style.bold ? 'bold' : '',
-            style.align ? `align-${style.align}` : '',
-            params.row.isHeader ? 'header-cell' : '',
-            params.row.sectionIndex > 0 && 
-            params.api.getRowIndex(params.row.id) === 0 ? 'section-start' : ''
-          ].filter(Boolean).join(' ');
-
           return (
-            <div 
-              className={cellClasses}
-              style={{
-                ...(style.background && {
-                  backgroundColor: `#${style.background.substring(2)}`
-                })
-              }}
-            >
+            <div className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}>
               {cell.value || ''}
             </div>
           );
@@ -170,14 +167,29 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
               hideFooter
               disableColumnMenu
               disableSelectionOnClick
+              getRowHeight={() => 'auto'}
               components={{
-                Toolbar: null, // Remove the toolbar completely
+                Toolbar: null,
               }}
               sx={{
                 '& .MuiDataGrid-cell': {
-                  padding: '0 8px',
-                  maxHeight: '200px',
-                  overflow: 'hidden'
+                  padding: 0,
+                  border: '1px solid #e0e0e0',
+                  whiteSpace: 'normal',
+                  wordWrap: 'break-word',
+                  height: 'auto',
+                  maxHeight: 'none',
+                  overflow: 'visible',
+                },
+                '& .MuiDataGrid-row': {
+                  maxHeight: 'none !important',
+                },
+                '& .MuiDataGrid-renderingZone': {
+                  maxHeight: 'none !important',
+                },
+                '& .MuiDataGrid-virtualScroller': {
+                  height: 'auto !important',
+                  overflow: 'visible !important'
                 }
               }}
             />
