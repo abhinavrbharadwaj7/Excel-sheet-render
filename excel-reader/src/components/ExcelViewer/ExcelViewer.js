@@ -1,5 +1,5 @@
 // components/ExcelViewer/ExcelViewer.js
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ExcelJS from 'exceljs';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { Tabs, Tab, Typography, CircularProgress, IconButton } from '@mui/material';
@@ -14,6 +14,8 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [columnWidths, setColumnWidths] = useState({});
+  const [resizingColumn, setResizingColumn] = useState(null);
 
   // File handling functions
   const handleDrop = useCallback((e) => {
@@ -60,6 +62,36 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
     }
   };
 
+  const handleResizeStart = (field, e) => {
+    setResizingColumn(field);
+    e.preventDefault();
+  };
+
+  const handleResize = useCallback((e) => {
+    if (!resizingColumn) return;
+    
+    setColumnWidths(prev => ({
+      ...prev,
+      [resizingColumn]: Math.max(150, e.clientX - e.target.getBoundingClientRect().left)
+    }));
+  }, [resizingColumn]);
+
+  const handleResizeEnd = () => {
+    setResizingColumn(null);
+  };
+
+  useEffect(() => {
+    if (resizingColumn) {
+      window.addEventListener('mousemove', handleResize);
+      window.addEventListener('mouseup', handleResizeEnd);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleResize);
+        window.removeEventListener('mouseup', handleResizeEnd);
+      };
+    }
+  }, [resizingColumn, handleResize]);
+
   const generateColumns = (headers) => {
     return [
       {
@@ -68,6 +100,7 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
         width: 60,
         sortable: false,
         filterable: false,
+        resizable: true, // Enable resizing for row numbers
         renderCell: (params) => (
           <div className="row-number-cell">
             {String(params.row.__rowNum)}
@@ -77,8 +110,9 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       ...headers.map((_, index) => ({
         field: `col${index + 1}`,
         headerName: String.fromCharCode(65 + index), // A, B, C, etc.
-        flex: 1,
+        width: columnWidths[`col${index + 1}`] || 150,
         minWidth: 150,
+        resizable: true, // Enable resizing for all columns
         sortable: false,
         filterable: false,
         renderCell: (params) => {
@@ -86,14 +120,20 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
           if (!cell) return '';
           
           return (
-            <div 
-              className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
-              style={{
-                gridRow: `span ${cell.rowSpan || 1}`,
-                gridColumn: `span ${cell.colSpan || 1}`
-              }}
-            >
-              {String(cell.value || '')}
+            <div className="resizable-cell">
+              <div 
+                className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
+                style={{
+                  gridRow: `span ${cell.rowSpan || 1}`,
+                  gridColumn: `span ${cell.colSpan || 1}`
+                }}
+              >
+                {String(cell.value || '')}
+              </div>
+              <div
+                className="resize-handle"
+                onMouseDown={(e) => handleResizeStart(params.field, e)}
+              />
             </div>
           );
         }

@@ -316,3 +316,26 @@
 .styled-cell.align-center {
   justify-content: center;
 }
+
+/* Add resizable cell styles */
+.resizable-cell {
+  position: relative;
+  height: 100%;
+  overflow: visible;
+}
+
+.resize-handle {
+  position: absolute;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: col-resize;
+  z-index: 100;
+}
+
+.cell-expanded {
+  z-index: 1000;
+  position: relative;
+  background-color: inherit;
+}
