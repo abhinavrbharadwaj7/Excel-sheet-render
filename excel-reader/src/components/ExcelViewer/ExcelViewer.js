@@ -97,10 +97,9 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       {
         field: '__rowNum',
         headerName: '',
-        width: 60,
+        width: 50,
         sortable: false,
         filterable: false,
-        resizable: true, // Enable resizing for row numbers
         renderCell: (params) => (
           <div className="row-number-cell">
             {String(params.row.__rowNum)}
@@ -109,31 +108,27 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
       },
       ...headers.map((_, index) => ({
         field: `col${index + 1}`,
-        headerName: String.fromCharCode(65 + index), // A, B, C, etc.
-        width: columnWidths[`col${index + 1}`] || 150,
-        minWidth: 150,
-        resizable: true, // Enable resizing for all columns
+        headerName: String.fromCharCode(65 + index),
+        flex: 1,
+        minWidth: 120,
         sortable: false,
         filterable: false,
         renderCell: (params) => {
           const cell = params.value;
           if (!cell) return '';
           
+          // Check if value is numeric
+          const isNumber = !isNaN(cell.value) && cell.value !== '';
+          
           return (
-            <div className="resizable-cell">
-              <div 
-                className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''}`}
-                style={{
-                  gridRow: `span ${cell.rowSpan || 1}`,
-                  gridColumn: `span ${cell.colSpan || 1}`
-                }}
-              >
-                {String(cell.value || '')}
-              </div>
-              <div
-                className="resize-handle"
-                onMouseDown={(e) => handleResizeStart(params.field, e)}
-              />
+            <div 
+              className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''} ${isNumber ? 'number-cell' : ''}`}
+              style={{
+                gridRow: `span ${cell.rowSpan || 1}`,
+                gridColumn: `span ${cell.colSpan || 1}`
+              }}
+            >
+              {String(cell.value || '')}
             </div>
           );
         }
