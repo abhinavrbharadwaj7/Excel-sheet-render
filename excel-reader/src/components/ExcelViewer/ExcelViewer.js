@@ -16,6 +16,19 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [columnWidths, setColumnWidths] = useState({});
   const [resizingColumn, setResizingColumn] = useState(null);
+  const [expandedCells, setExpandedCells] = useState(new Set());
+
+  const toggleCellExpansion = (cellId) => {
+    setExpandedCells(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(cellId)) {
+        newSet.delete(cellId);
+      } else {
+        newSet.add(cellId);
+      }
+      return newSet;
+    });
+  };
 
   // File handling functions
   const handleDrop = useCallback((e) => {
@@ -117,18 +130,30 @@ const ExcelViewer = ({ darkMode, onToggleTheme }) => {
           const cell = params.value;
           if (!cell) return '';
           
-          // Check if value is numeric
-          const isNumber = !isNaN(cell.value) && cell.value !== '';
+          const cellId = `${params.row.id}-${params.field}`;
+          const isExpanded = expandedCells.has(cellId);
+          const shouldShowExpand = cell.value && cell.value.length > 50;
           
           return (
-            <div 
-              className={`cell-content ${cell.rowSpan || cell.colSpan ? 'merged-cell' : ''} ${isNumber ? 'number-cell' : ''}`}
-              style={{
-                gridRow: `span ${cell.rowSpan || 1}`,
-                gridColumn: `span ${cell.colSpan || 1}`
-              }}
-            >
-              {String(cell.value || '')}
+            <div className={`cell-container`}>
+              <div 
+                className={`cell-content ${isExpanded ? 'expanded' : ''}`}
+                style={{
+                  gridRow: `span ${cell.rowSpan || 1}`,
+                  gridColumn: `span ${cell.colSpan || 1}`
+                }}
+              >
+                {String(cell.value || '')}
+                {shouldShowExpand && (
+                  <div 
+                    className="cell-expand-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCellExpansion(cellId);
+                    }}
+                  />
+                )}
+              </div>
             </div>
           );
         }

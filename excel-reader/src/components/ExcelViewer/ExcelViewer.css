@@ -91,18 +91,36 @@
 
 /* Simplify cell content styling */
 .cell-content {
+  position: relative;
   width: 100%;
-  min-height: 100%;
-  padding: 6px 8px;
+  min-height: 24px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
-  white-space: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: break-word;
-  line-height: 1.2;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Calibri', sans-serif;
+  line-height: 1.4;
+  font-family: 'Calibri', sans-serif;
   font-size: 14px;
   color: #333;
   letter-spacing: -0.1px;
+  transition: max-height 0.2s ease, background-color 0.2s ease;
+  cursor: default;
+}
+
+.cell-content:hover {
+  white-space: normal;
+  overflow: visible;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-height: auto;
+  min-width: 100%;
+  position: absolute;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
 }
 
 .cell-content::selection {
@@ -111,6 +129,67 @@
 
 .dark .cell-content {
   color: #e0e0e0;
+}
+
+.dark .cell-content:hover {
+  background-color: #2d2d2d;
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Expandable cell button */
+.cell-expand-button {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  background: #6366f1;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+  z-index: 5;
+}
+
+.cell-content:hover .cell-expand-button {
+  opacity: 1;
+}
+
+/* Expanded cell styles */
+.cell-content.expanded {
+  position: absolute;
+  background: white;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  z-index: 1000;
+  min-width: 300px;
+  max-width: 500px;
+  min-height: 100px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.dark .cell-content.expanded {
+  background: #2d2d2d;
+  border-color: #444;
+}
+
+.cell-expand-button::before {
+  content: '⤢';
+  font-size: 10px;
+}
+
+.expanded .cell-expand-button::before {
+  content: '⤡';
 }
 
 /* Cell address indicator */
@@ -187,6 +266,7 @@
 }
 
 .MuiDataGrid-columnHeader {
+  position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Calibri', sans-serif !important;
   font-size: 12px !important;
   font-weight: 600 !important;
@@ -195,6 +275,21 @@
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
   border-right: 1px solid #e0e0e0 !important;
+}
+
+.MuiDataGrid-columnHeader::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.MuiDataGrid-columnHeader:hover::after {
+  background: rgba(99, 102, 241, 0.2);
 }
 
 .dark .MuiDataGrid-columnHeader {
@@ -344,6 +439,7 @@
 }
 
 .cell-expanded {
+  max-height: none !important;
   z-index: 1000;
   position: relative;
   background-color: inherit;
@@ -354,6 +450,18 @@
   outline: 2px solid #1a73e8 !important;
   outline-offset: -2px !important;
   z-index: 2;
+}
+
+.MuiDataGrid-cell:focus-within .cell-content {
+  background: #e8f0fe;
+  outline: 2px solid #1a73e8;
+  outline-offset: -2px;
+  z-index: 2;
+}
+
+.dark .MuiDataGrid-cell:focus-within .cell-content {
+  background: #2d2d2d;
+  outline-color: #1a73e8;
 }
 
 /* Sheet tabs styling */
@@ -387,4 +495,56 @@
 
 .dark .MuiTab-root.Mui-selected {
   background: #1e1e1e;
+}
+
+/* Cell expansion control */
+.cell-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.expand-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background-image: linear-gradient(135deg, transparent 50%, #6366f1 50%);
+  border-radius: 0 0 2px 0;
+  z-index: 10;
+}
+
+.cell-container:hover .expand-handle {
+  opacity: 1;
+}
+
+.cell-expanded .expand-handle {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+.cell-expanded .cell-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+  padding: 8px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.dark .cell-expanded .cell-content {
+  background: #2d2d2d;
+  border-color: #444;
 }
